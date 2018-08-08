@@ -30,7 +30,7 @@ if (!file.exists("data.zip")) {
 }
 ```
 
-If the data is not extracted, the data is extracted from data.zip. If the data has been previously extracted to to "UCI HAR Dataset", the script prints a message and moves onto the next step.
+If the data is not extracted, the data is extracted from data.zip. If the data has been previously extracted to to "UCI HAR Data set", the script prints a message and moves onto the next step.
 
 
 ```r
@@ -52,6 +52,7 @@ The following libraries and versions, were used in the preprocessing and manipul
 | dplyr      | 0.7.6   |
 | tidyr      | 0.8.1   |
 | lubridate  | 1.7.4   |
+| ggplot2    | 3.0.0   |
 
 If installed, they can be loaded as follows:
 
@@ -61,6 +62,7 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(ggplot2)
 ```
 
 The data was read into a data.frame, `data` using `read.csv()`.
@@ -80,7 +82,7 @@ names(data)
 ```
 ## [1] "steps"    "date"     "interval"
 ```
-The variables included in this dataset are:
+The variables included in this data set are:
 
 * `steps`: *\<integer\>* Number of steps taking in a 5-minute interval (missing
     values are coded as `NA`).
@@ -99,15 +101,16 @@ week_day <- c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 week_end <- c("weekend","weekday","weekday","weekday","weekday","weekday","weekend")
 ```
 
-* `week_day`: *\<character\>* Character vector of the days of the week where `week_day[1]` maps to Sunday to be consistant with the output of the lubridate function `wday()`.
+* `week_day`: *\<character\>* Character vector of the days of the week where `week_day[1]` maps to Sunday to be consistent with the output of the lubridate function `wday()`.
 
-* `week_end`: *\<character\>* Character vector based upon the days of the week where `week_end[1]` maps to the result for a Sunday to be consistant with the output of the lubridate function `wday()`. In this variable, Saturday and Sunday are classified as weekend days (`weekend`), while Monday, Tuesday, Wednesday, Thursday and Friday are classified as week days (`weekday`).
+* `week_end`: *\<character\>* Character vector based upon the days of the week where `week_end[1]` maps to the result for a Sunday to be consistent with the output of the lubridate function `wday()`. In this variable, Saturday and Sunday are classified as weekend days (`weekend`), while Monday, Tuesday, Wednesday, Thursday and Friday are classified as week days (`weekday`).
 
-In order to be able to calculate satistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
+In order to be able to calculate statistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. The `date` column was converted from *\<factor\>* to *\<date\>* type using the `as.Date` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
 
 
 ```r
 data <- mutate(data,
+     date       = as.Date(date, format = "%Y-%m-%d"),
      week.day   = week_day[wday(date)],
      week.end   = week_end[wday(date)]
      )
@@ -115,29 +118,134 @@ data[sample(nrow(data), 10),]
 ```
 
 ```
-##       steps       date interval  week.day week.end
-## 11500    NA 2012-11-09     2215    Friday  weekday
-## 14334     0 2012-11-19     1825    Monday  weekday
-## 10925     0 2012-11-07     2220 Wednesday  weekday
-## 11206     0 2012-11-08     2145  Thursday  weekday
-## 16804     0 2012-11-28      815 Wednesday  weekday
-## 10688     0 2012-11-07      235 Wednesday  weekday
-## 16082     0 2012-11-25     2005    Sunday  weekend
-## 12918    NA 2012-11-14     2025 Wednesday  weekday
-## 13330     0 2012-11-16      645    Friday  weekday
-## 5275      0 2012-10-19      730    Friday  weekday
+##       steps       date interval week.day week.end
+## 11374    NA 2012-11-09     1145   Friday  weekday
+## 12488    16 2012-11-13      835  Tuesday  weekday
+## 3736      0 2012-10-13     2315 Saturday  weekend
+## 11713    NA 2012-11-10     1600 Saturday  weekend
+## 2551      0 2012-10-09     2030  Tuesday  weekday
+## 11650    NA 2012-11-10     1045 Saturday  weekend
+## 7644    314 2012-10-27     1255 Saturday  weekend
+## 14571     0 2012-11-20     1410  Tuesday  weekday
+## 222      NA 2012-10-01     1825   Monday  weekday
+## 12977     0 2012-11-15      120 Thursday  weekday
 ```
 
 ## What is mean total number of steps taken per day?
 
+The total, mean and median steps taken per day, named `steps.total`, `steps.mean` and `steps.median` were calculated and the result placed into a data.frame, `steps_stats`. This was achieved by grouping the data.frame `data` by `date` and piping the output to `summarise()` with the appropriate quantites calculated. A sample of the data.frame `steps_stats` can also be seen.
 
+
+```r
+steps_stats <- data %>%
+     group_by(.,date) %>%
+     summarise(.,
+          steps.total  = sum(steps),
+          steps.mean   = mean(steps),
+          steps.median = median(steps)
+     )
+
+head(steps_stats)
+```
+
+```
+## # A tibble: 6 x 4
+##   date       steps.total steps.mean steps.median
+##   <date>           <int>      <dbl>        <dbl>
+## 1 2012-10-01          NA     NA               NA
+## 2 2012-10-02         126      0.438            0
+## 3 2012-10-03       11352     39.4              0
+## 4 2012-10-04       12116     42.1              0
+## 5 2012-10-05       13294     46.2              0
+## 6 2012-10-06       15420     53.5              0
+```
+
+A line with point plot of `steps.total` versus `date` was produced using the data.frame, `step_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced one week apart. Notible here, are the missing values introduced by the "`NA`" values.
+
+
+```r
+ggplot(steps_stats,
+aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
+labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
+theme_classic()
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 ## What is the average daily activity pattern?
 
+The mean daily pattern is derived in a similar way to the previous section where I calculated the previous data.frame, `day_stats`. The total, mean and median steps taken per interval, named `steps.total`, `steps.mean` and `steps.median` were calculated and the result placed into a data.frame, `day_stats`. This was achieved by grouping the data.frame `data` by `interval` and piping the output to `summarise()` with the appropriate quantites calculated. A sample of the data.frame `day_stats` can also be seen.
 
+
+```r
+day_stats <- data %>%
+     group_by(.,interval) %>%
+     summarise(.,
+          steps.total  = sum(steps, na.rm=TRUE),
+          steps.mean   = mean(steps, na.rm=TRUE),
+          steps.median = median(steps, na.rm=TRUE)
+     )
+
+head(day_stats)
+```
+
+```
+## # A tibble: 6 x 4
+##   interval steps.total steps.mean steps.median
+##      <int>       <int>      <dbl>        <int>
+## 1        0          91     1.72              0
+## 2        5          18     0.340             0
+## 3       10           7     0.132             0
+## 4       15           8     0.151             0
+## 5       20           4     0.0755            0
+## 6       25         111     2.09              0
+```
+
+A line with point plot of `steps.total` versus `interval` was produced using the data.frame, `day_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced apart by 200 (i.e. 2 hours).
+
+
+```r
+ggplot(day_stats,
+aes(x=interval, y=steps.total, group=1)) + geom_line() + geom_point() +
+labs(title = "Mean Steps Vs. Interval", x = "Interval", y = "Mean Steps") +
+scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
+theme_classic()
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+The maximum value can be seen by the spike on the graph above and by ordering `day_stats` asending by `steps.mean` by using the `aarange()` function. The maximum average daily activity occurs durring `interval = 835` which corresponds to the time 08:35.
+
+
+```r
+head(day_stats %>% arrange(.,desc(steps.mean)))
+```
+
+```
+## # A tibble: 6 x 4
+##   interval steps.total steps.mean steps.median
+##      <int>       <int>      <dbl>        <int>
+## 1      835       10927       206.           19
+## 2      840       10384       196.           51
+## 3      850        9720       183.           16
+## 4      845        9517       180.           60
+## 5      830        9397       177.           37
+## 6      820        9071       171.           45
+```
 
 ## Imputing missing values
 
+The data has serveral days that are missing which are denoted in the data set as "`NA`". In order to fill in the blanks in the data I will consider a value of "`NA`" equal to 0. Therefore, I substitute all the "`NA`" values in the `steps` column of `data` using `replace_na()` from the tidyr package. The output of the mutation of the data.frame was output to a new data.frame, `data_tidy`.
 
+
+```r
+data_tidy <- mutate(
+     data,
+     steps   = replace_na(steps,0),
+     w_day   = week_day[wday(date)],
+     w_end   = week_end[wday(date)]
+     )
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?

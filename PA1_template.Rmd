@@ -50,6 +50,7 @@ The following libraries and versions, were used in the preprocessing and manipul
 | dplyr      | 0.7.6   |
 | tidyr      | 0.8.1   |
 | lubridate  | 1.7.4   |
+| ggplot2    | 3.0.0   |
 
 If installed, they can be loaded as follows:
 
@@ -58,6 +59,7 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(ggplot2)
 ```
 
 The data was read into a data.frame, `data` using `read.csv()`.
@@ -93,10 +95,11 @@ week_end <- c("weekend","weekday","weekday","weekday","weekday","weekday","weeke
 
 * `week_end`: *\<character\>* Character vector based upon the days of the week where `week_end[1]` maps to the result for a Sunday to be consistent with the output of the lubridate function `wday()`. In this variable, Saturday and Sunday are classified as weekend days (`weekend`), while Monday, Tuesday, Wednesday, Thursday and Friday are classified as week days (`weekday`).
 
-In order to be able to calculate statistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
+In order to be able to calculate statistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. The `date` column was converted from *\<factor\>* to *\<date\>* type using the `as.Date` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
 
 ```{r}
 data <- mutate(data,
+     date       = as.Date(date, format = "%Y-%m-%d"),
      week.day   = week_day[wday(date)],
      week.end   = week_end[wday(date)]
      )
@@ -105,14 +108,73 @@ data[sample(nrow(data), 10),]
 
 ## What is mean total number of steps taken per day?
 
+The total, mean and median steps taken per day, named `steps.total`, `steps.mean` and `steps.median` were calculated and the result placed into a data.frame, `steps_stats`. This was achieved by grouping the data.frame `data` by `date` and piping the output to `summarise()` with the appropriate quantites calculated. A sample of the data.frame `steps_stats` can also be seen.
 
+```{r}
+steps_stats <- data %>%
+     group_by(.,date) %>%
+     summarise(.,
+          steps.total  = sum(steps),
+          steps.mean   = mean(steps),
+          steps.median = median(steps)
+     )
+
+head(steps_stats)
+```
+
+A line with point plot of `steps.total` versus `date` was produced using the data.frame, `step_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced one week apart. Notible here, are the missing values introduced by the "`NA`" values.
+
+```{r message=FALSE, warning=FALSE}
+ggplot(steps_stats,
+aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
+labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
+theme_classic()
+```
 
 ## What is the average daily activity pattern?
 
+The mean daily pattern is derived in a similar way to the previous section where I calculated the previous data.frame, `day_stats`. The total, mean and median steps taken per interval, named `steps.total`, `steps.mean` and `steps.median` were calculated and the result placed into a data.frame, `day_stats`. This was achieved by grouping the data.frame `data` by `interval` and piping the output to `summarise()` with the appropriate quantites calculated. A sample of the data.frame `day_stats` can also be seen.
 
+```{r}
+day_stats <- data %>%
+     group_by(.,interval) %>%
+     summarise(.,
+          steps.total  = sum(steps, na.rm=TRUE),
+          steps.mean   = mean(steps, na.rm=TRUE),
+          steps.median = median(steps, na.rm=TRUE)
+     )
+
+head(day_stats)
+```
+
+A line with point plot of `steps.total` versus `interval` was produced using the data.frame, `day_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced apart by 200 (i.e. 2 hours).
+
+```{r message=FALSE, warning=FALSE}
+ggplot(day_stats,
+aes(x=interval, y=steps.total, group=1)) + geom_line() + geom_point() +
+labs(title = "Mean Steps Vs. Interval", x = "Interval", y = "Mean Steps") +
+scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
+theme_classic()
+```
+
+The maximum value can be seen by the spike on the graph above and by ordering `day_stats` asending by `steps.mean` by using the `aarange()` function. The maximum average daily activity occurs durring `interval = 835` which corresponds to the time 08:35.
+
+```{r}
+head(day_stats %>% arrange(.,desc(steps.mean)))
+```
 
 ## Imputing missing values
 
+The data has serveral days that are missing which are denoted in the data set as "`NA`". In order to fill in the blanks in the data I will consider a value of "`NA`" equal to 0. Therefore, I substitute all the "`NA`" values in the `steps` column of `data` using `replace_na()` from the tidyr package. The output of the mutation of the data.frame was output to a new data.frame, `data_tidy`.
 
+```{r}
+data_tidy <- mutate(
+     data,
+     steps   = replace_na(steps,0),
+     w_day   = week_day[wday(date)],
+     w_end   = week_end[wday(date)]
+     )
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
