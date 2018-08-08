@@ -20,7 +20,8 @@ The data was accessed from:
 
 If the data is not downloaded, the data is downloaded from the above URL. If the data has been previously downloaded and named as data.zip, the script prints a message and moves onto the next step.
 
-```{r message=FALSE}
+
+```r
 if (!file.exists("data.zip")) {
      message("Downloading data from 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'... Please wait")
      download.file(url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "data.zip", method = "curl")
@@ -31,7 +32,8 @@ if (!file.exists("data.zip")) {
 
 If the data is not extracted, the data is extracted from data.zip. If the data has been previously extracted to to "UCI HAR Dataset", the script prints a message and moves onto the next step.
 
-```{r message = FALSE}
+
+```r
 if (file.exists("data.zip") & !file.exists("activity.csv")) {
      message("Extracting data to './activity.csv'... Please wait")
      unzip("data.zip")
@@ -53,7 +55,8 @@ The following libraries and versions, were used in the preprocessing and manipul
 
 If installed, they can be loaded as follows:
 
-```{r libraries, message=FALSE, warning=FALSE, include=TRUE}
+
+```r
 library(data.table)
 library(dplyr)
 library(tidyr)
@@ -62,14 +65,20 @@ library(lubridate)
 
 The data was read into a data.frame, `data` using `read.csv()`.
 
-```{r}
+
+```r
 data <- read.csv("activity.csv")
 ```
 
 The data.frame `data` contained three columns as shown by the `names()` function: "steps"; "date"; and "interval". 
 
-```{r}
+
+```r
 names(data)
+```
+
+```
+## [1] "steps"    "date"     "interval"
 ```
 The variables included in this dataset are:
 
@@ -84,7 +93,8 @@ The variables included in this dataset are:
 
 As mapping trends relating to specific days and/or parts of the week would be of interest, two character vectors were defined to easily map the result of inputting date data into the lubridate function `wday()` to the desired result (i.e. the day of the week or if day of the week is weekday/weekend).
 
-```{r}
+
+```r
 week_day <- c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
 week_end <- c("weekend","weekday","weekday","weekday","weekday","weekday","weekend")
 ```
@@ -95,12 +105,27 @@ week_end <- c("weekend","weekday","weekday","weekday","weekday","weekday","weeke
 
 In order to be able to calculate satistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
 
-```{r}
+
+```r
 data <- mutate(data,
      week.day   = week_day[wday(date)],
      week.end   = week_end[wday(date)]
      )
 data[sample(nrow(data), 10),]
+```
+
+```
+##       steps       date interval  week.day week.end
+## 11500    NA 2012-11-09     2215    Friday  weekday
+## 14334     0 2012-11-19     1825    Monday  weekday
+## 10925     0 2012-11-07     2220 Wednesday  weekday
+## 11206     0 2012-11-08     2145  Thursday  weekday
+## 16804     0 2012-11-28      815 Wednesday  weekday
+## 10688     0 2012-11-07      235 Wednesday  weekday
+## 16082     0 2012-11-25     2005    Sunday  weekend
+## 12918    NA 2012-11-14     2025 Wednesday  weekday
+## 13330     0 2012-11-16      645    Friday  weekday
+## 5275      0 2012-10-19      730    Friday  weekday
 ```
 
 ## What is mean total number of steps taken per day?
