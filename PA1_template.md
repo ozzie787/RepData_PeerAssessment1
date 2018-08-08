@@ -118,17 +118,17 @@ data[sample(nrow(data), 10),]
 ```
 
 ```
-##       steps       date interval week.day week.end
-## 11374    NA 2012-11-09     1145   Friday  weekday
-## 12488    16 2012-11-13      835  Tuesday  weekday
-## 3736      0 2012-10-13     2315 Saturday  weekend
-## 11713    NA 2012-11-10     1600 Saturday  weekend
-## 2551      0 2012-10-09     2030  Tuesday  weekday
-## 11650    NA 2012-11-10     1045 Saturday  weekend
-## 7644    314 2012-10-27     1255 Saturday  weekend
-## 14571     0 2012-11-20     1410  Tuesday  weekday
-## 222      NA 2012-10-01     1825   Monday  weekday
-## 12977     0 2012-11-15      120 Thursday  weekday
+##       steps       date interval  week.day week.end
+## 2066     NA 2012-10-08      405    Monday  weekday
+## 13806     0 2012-11-17     2225  Saturday  weekend
+## 6317    174 2012-10-22     2220    Monday  weekday
+## 2817    260 2012-10-10     1840 Wednesday  weekday
+## 10607     0 2012-11-06     1950   Tuesday  weekday
+## 11580    NA 2012-11-10      455  Saturday  weekend
+## 12205   539 2012-11-12      900    Monday  weekday
+## 6218      0 2012-10-22     1405    Monday  weekday
+## 16394     0 2012-11-26     2205    Monday  weekday
+## 11728    NA 2012-11-10     1715  Saturday  weekend
 ```
 
 ## What is mean total number of steps taken per day?
@@ -173,6 +173,25 @@ theme_classic()
 
 ![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
+The mean and median total number of steps can be calculated on `steps_stats` using the `mean()` and `median()` functions. The option `na.rm = TRUE` is set as the data for `steps` contains missing values. From the data it can be seen that the mean number of steps per day was 10766.19 steps, with a median value of 10765 steps.
+
+
+```r
+mean(steps_stats$steps.total, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(steps_stats$steps.total, na.rm = TRUE)
+```
+
+```
+## [1] 10765
+```
+
 ## What is the average daily activity pattern?
 
 The mean daily pattern is derived in a similar way to the previous section where I calculated the previous data.frame, `day_stats`. The total, mean and median steps taken per interval, named `steps.total`, `steps.mean` and `steps.median` were calculated and the result placed into a data.frame, `day_stats`. This was achieved by grouping the data.frame `data` by `interval` and piping the output to `summarise()` with the appropriate quantites calculated. A sample of the data.frame `day_stats` can also be seen.
@@ -213,9 +232,9 @@ scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
 theme_classic()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
-The maximum value can be seen by the spike on the graph above and by ordering `day_stats` asending by `steps.mean` by using the `aarange()` function. The maximum average daily activity occurs durring `interval = 835` which corresponds to the time 08:35.
+The maximum value can be seen by the spike on the graph above and by ordering `day_stats` asending by `steps.mean` by using the `aarange()` function. The maximum average daily activity occurs durring `interval = 835` which corresponds to the time arround 08:35.
 
 
 ```r
@@ -236,16 +255,83 @@ head(day_stats %>% arrange(.,desc(steps.mean)))
 
 ## Imputing missing values
 
-The data has serveral days that are missing which are denoted in the data set as "`NA`". In order to fill in the blanks in the data I will consider a value of "`NA`" equal to 0. Therefore, I substitute all the "`NA`" values in the `steps` column of `data` using `replace_na()` from the tidyr package. The output of the mutation of the data.frame was output to a new data.frame, `data_tidy`.
+The data has serveral days that are missing which are denoted in the data set as "`NA`". Using a combination of the `sum()` and `is.na()`functions it can be calculated that 2304 entries for `steps` are blank.
 
 
 ```r
-data_tidy <- mutate(
-     data,
-     steps   = replace_na(steps,0),
-     w_day   = week_day[wday(date)],
-     w_end   = week_end[wday(date)]
-     )
+sum(is.na(data$steps))
 ```
 
+```
+## [1] 2304
+```
+
+In order to fill in the blanks in the data I will consider a value of "`NA`" equal to 0. Therefore, I substitute all the "`NA`" values in the `steps` column of `data` using `replace_na()` from the tidyr package. The output of the mutation of the data.frame was output to a new data.frame, `data_tidy`.
+
+
+```r
+data_tidy <- mutate(data, steps = replace_na(steps,0))
+```
+
+
+```r
+steps_stats_tidy <- data_tidy %>%
+     group_by(.,date) %>%
+     summarise(.,
+          steps.total  = sum(steps),
+          steps.mean   = mean(steps),
+          steps.median = median(steps)
+     )
+
+head(steps_stats_tidy)
+```
+
+```
+## # A tibble: 6 x 4
+##   date       steps.total steps.mean steps.median
+##   <date>           <dbl>      <dbl>        <dbl>
+## 1 2012-10-01           0      0                0
+## 2 2012-10-02         126      0.438            0
+## 3 2012-10-03       11352     39.4              0
+## 4 2012-10-04       12116     42.1              0
+## 5 2012-10-05       13294     46.2              0
+## 6 2012-10-06       15420     53.5              0
+```
+
+A line with point plot of `steps.total` versus `date` was produced using the data.frame, `step_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced one week apart. Notible here, are the missing values introduced by the "`NA`" values.
+
+
+```r
+ggplot(steps_stats_tidy,
+aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
+labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
+theme_classic()
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+
+The mean and median total number of steps can be calculated on `steps_stats_tidy` using the `mean()` and `median()` functions. The option `na.rm = TRUE` is not set on this occasion as the data for `steps` no longer contains missing values. From the data it can be seen that the mean number of steps per day was 9354.23 steps, with a median value of 10395 steps.
+
+
+```r
+mean(steps_stats_tidy$steps.total)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
+median(steps_stats_tidy$steps.total)
+```
+
+```
+## [1] 10395
+```
+
+Reincluding the missing data as zeros has changed the mean more so that the median value. On the histogram the substitution of "`NA`" values for zeros gives the false appearance that on all those days no step activity was taken by the user of the device. Including the zeros lowers the overall mean of the data as instead of taking the mean over 61 days (17568 records total) rather than the 53 days (15264 records total) where the step activity has truely been recorded. Adding extra zeros into the mean, has the effect of diving the same total number of steps divided by a larger number biasing the input to `mean()` towards zero, leading to a much smaller mean. This large number of zeros being added into the set for the median will decrease the mean by biasing the data placed into `median()` towards smaller values for recorded step activity.
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Earlier, columns were added to the data.frame to indicate which day a date belongs to and wether it is a weekday or a weekend.
