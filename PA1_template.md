@@ -119,16 +119,16 @@ data[sample(nrow(data), 10),]
 
 ```
 ##       steps       date interval  week.day week.end
-## 7746      0 2012-10-27     2125  Saturday  weekend
-## 2938     15 2012-10-11      445  Thursday  weekday
-## 4849      0 2012-10-17     2000 Wednesday  weekday
-## 13920    35 2012-11-18      755    Sunday  weekend
-## 12785    NA 2012-11-14      920 Wednesday  weekday
-## 9008     NA 2012-11-01      635  Thursday  weekday
-## 8451      0 2012-10-30      810   Tuesday  weekday
-## 14731     0 2012-11-21      330 Wednesday  weekday
-## 15797     0 2012-11-24     2020  Saturday  weekend
-## 9649    104 2012-11-03     1200  Saturday  weekend
+## 8263      0 2012-10-29     1630    Monday  weekday
+## 16229    67 2012-11-26      820    Monday  weekday
+## 635       0 2012-10-03      450 Wednesday  weekday
+## 15657   139 2012-11-24      840  Saturday  weekend
+## 7659     30 2012-10-27     1410  Saturday  weekend
+## 11797    NA 2012-11-10     2300  Saturday  weekend
+## 3966     58 2012-10-14     1825    Sunday  weekend
+## 3956     55 2012-10-14     1735    Sunday  weekend
+## 16868     0 2012-11-28     1335 Wednesday  weekday
+## 16518     0 2012-11-27      825   Tuesday  weekday
 ```
 
 ## What is mean total number of steps taken per day?
@@ -166,7 +166,7 @@ A line with point plot of `steps.total` versus `date` was produced using the dat
 ```r
 ggplot(steps_stats,
 aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+labs(title = "Total Steps Vs. Date", subtitle = "Missing data included", x = "Date", y = "Total Steps") +
 scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
 theme_classic()
 ```
@@ -227,7 +227,7 @@ A line with point plot of `steps.total` versus `interval` was produced using the
 ```r
 ggplot(day_stats,
 aes(x=interval, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Mean Steps Vs. Interval", subtitle = "Missing data included", x = "Interval", y = "Mean Steps") +
+labs(title = "Mean Steps Vs. Interval", x = "Interval", y = "Mean Steps") +
 scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
 theme_classic()
 ```

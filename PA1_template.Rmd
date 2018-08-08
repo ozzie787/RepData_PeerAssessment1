@@ -127,7 +127,7 @@ A line with point plot of `steps.total` versus `date` was produced using the dat
 ```{r message=FALSE, warning=FALSE}
 ggplot(steps_stats,
 aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+labs(title = "Total Steps Vs. Date", subtitle = "Missing data included", x = "Date", y = "Total Steps") +
 scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
 theme_classic()
 ```
@@ -160,7 +160,7 @@ A line with point plot of `steps.total` versus `interval` was produced using the
 ```{r message=FALSE, warning=FALSE}
 ggplot(day_stats,
 aes(x=interval, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Mean Steps Vs. Interval", subtitle = "Missing data included", x = "Interval", y = "Mean Steps") +
+labs(title = "Mean Steps Vs. Interval", x = "Interval", y = "Mean Steps") +
 scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
 theme_classic()
 ```
