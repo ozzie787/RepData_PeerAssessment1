@@ -2,8 +2,8 @@
 title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
-    keep_md: true
-    toc : true
+    keep_md: yes
+    toc: yes
 ---
 
 
@@ -119,16 +119,16 @@ data[sample(nrow(data), 10),]
 
 ```
 ##       steps       date interval  week.day week.end
-## 5715    473 2012-10-20     2010  Saturday  weekend
-## 2625      0 2012-10-10      240 Wednesday  weekday
-## 6396      0 2012-10-23      455   Tuesday  weekday
-## 7490      0 2012-10-27        5  Saturday  weekend
-## 12612    45 2012-11-13     1855   Tuesday  weekday
-## 15121    58 2012-11-22     1200  Thursday  weekday
-## 7607      2 2012-10-27      950  Saturday  weekend
-## 3516      0 2012-10-13      455  Saturday  weekend
-## 9354      0 2012-11-02     1125    Friday  weekday
-## 17393    NA 2012-11-30      920    Friday  weekday
+## 7746      0 2012-10-27     2125  Saturday  weekend
+## 2938     15 2012-10-11      445  Thursday  weekday
+## 4849      0 2012-10-17     2000 Wednesday  weekday
+## 13920    35 2012-11-18      755    Sunday  weekend
+## 12785    NA 2012-11-14      920 Wednesday  weekday
+## 9008     NA 2012-11-01      635  Thursday  weekday
+## 8451      0 2012-10-30      810   Tuesday  weekday
+## 14731     0 2012-11-21      330 Wednesday  weekday
+## 15797     0 2012-11-24     2020  Saturday  weekend
+## 9649    104 2012-11-03     1200  Saturday  weekend
 ```
 
 ## What is mean total number of steps taken per day?
