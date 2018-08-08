@@ -29,7 +29,7 @@ if (!file.exists("data.zip")) {
 }
 ```
 
-If the data is not extracted, the data is extracted from data.zip. If the data has been previously extracted to to "UCI HAR Dataset", the script prints a message and moves onto the next step.
+If the data is not extracted, the data is extracted from data.zip. If the data has been previously extracted to to "UCI HAR Data set", the script prints a message and moves onto the next step.
 
 ```{r message = FALSE}
 if (file.exists("data.zip") & !file.exists("activity.csv")) {
@@ -71,7 +71,7 @@ The data.frame `data` contained three columns as shown by the `names()` function
 ```{r}
 names(data)
 ```
-The variables included in this dataset are:
+The variables included in this data set are:
 
 * `steps`: *\<integer\>* Number of steps taking in a 5-minute interval (missing
     values are coded as `NA`).
@@ -89,11 +89,11 @@ week_day <- c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 week_end <- c("weekend","weekday","weekday","weekday","weekday","weekday","weekend")
 ```
 
-* `week_day`: *\<character\>* Character vector of the days of the week where `week_day[1]` maps to Sunday to be consistant with the output of the lubridate function `wday()`.
+* `week_day`: *\<character\>* Character vector of the days of the week where `week_day[1]` maps to Sunday to be consistent with the output of the lubridate function `wday()`.
 
-* `week_end`: *\<character\>* Character vector based upon the days of the week where `week_end[1]` maps to the result for a Sunday to be consistant with the output of the lubridate function `wday()`. In this variable, Saturday and Sunday are classified as weekend days (`weekend`), while Monday, Tuesday, Wednesday, Thursday and Friday are classified as week days (`weekday`).
+* `week_end`: *\<character\>* Character vector based upon the days of the week where `week_end[1]` maps to the result for a Sunday to be consistent with the output of the lubridate function `wday()`. In this variable, Saturday and Sunday are classified as weekend days (`weekend`), while Monday, Tuesday, Wednesday, Thursday and Friday are classified as week days (`weekday`).
 
-In order to be able to calculate satistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
+In order to be able to calculate statistics based upon day of the week and part of the week the columns `week.day` and `week.end` were added to the original data set, `data` by using the `mutate()` function. A random sample of rows from the mutated data.frame, `data` is also given to demonstrate the effect of the transformation and the current state of the data set.
 
 ```{r}
 data <- mutate(data,
