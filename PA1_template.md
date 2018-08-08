@@ -119,16 +119,16 @@ data[sample(nrow(data), 10),]
 
 ```
 ##       steps       date interval  week.day week.end
-## 2066     NA 2012-10-08      405    Monday  weekday
-## 13806     0 2012-11-17     2225  Saturday  weekend
-## 6317    174 2012-10-22     2220    Monday  weekday
-## 2817    260 2012-10-10     1840 Wednesday  weekday
-## 10607     0 2012-11-06     1950   Tuesday  weekday
-## 11580    NA 2012-11-10      455  Saturday  weekend
-## 12205   539 2012-11-12      900    Monday  weekday
-## 6218      0 2012-10-22     1405    Monday  weekday
-## 16394     0 2012-11-26     2205    Monday  weekday
-## 11728    NA 2012-11-10     1715  Saturday  weekend
+## 5715    473 2012-10-20     2010  Saturday  weekend
+## 2625      0 2012-10-10      240 Wednesday  weekday
+## 6396      0 2012-10-23      455   Tuesday  weekday
+## 7490      0 2012-10-27        5  Saturday  weekend
+## 12612    45 2012-11-13     1855   Tuesday  weekday
+## 15121    58 2012-11-22     1200  Thursday  weekday
+## 7607      2 2012-10-27      950  Saturday  weekend
+## 3516      0 2012-10-13      455  Saturday  weekend
+## 9354      0 2012-11-02     1125    Friday  weekday
+## 17393    NA 2012-11-30      920    Friday  weekday
 ```
 
 ## What is mean total number of steps taken per day?
@@ -227,7 +227,7 @@ A line with point plot of `steps.total` versus `interval` was produced using the
 ```r
 ggplot(day_stats,
 aes(x=interval, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Mean Steps Vs. Interval", x = "Interval", y = "Mean Steps") +
+labs(title = "Mean Steps Vs. Interval", subtitle = "Missing data included", x = "Interval", y = "Mean Steps") +
 scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
 theme_classic()
 ```
@@ -304,7 +304,7 @@ A line with point plot of `steps.total` versus `date` was produced using the dat
 ```r
 ggplot(steps_stats_tidy,
 aes(x=date, y=steps.total, group=1)) + geom_line() + geom_point() +
-labs(title = "Total Steps Vs. Date", x = "Date", y = "Total Steps") +
+labs(title = "Total Steps Vs. Date", subtitle = "No missing data", x = "Date", y = "Total Steps") +
 scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d") +
 theme_classic()
 ```
@@ -334,4 +334,33 @@ Reincluding the missing data as zeros has changed the mean more so that the medi
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-Earlier, columns were added to the data.frame to indicate which day a date belongs to and wether it is a weekday or a weekend.
+Earlier, columns were added to the data.frame, `data` to indicate which day a date belongs to and wether it is a weekday or a weekend. These columns were carried forward into the tidied data.frame, `data_tidy`. These can be used to compare the average actvity of a day based upon wether the day is a weekday or weekend.
+
+The data.frame, `week_stats` contains the sum, mean and median values for steps grouped by wether the date the data was recorded was a weekday or weekend. The data.frame, `week_stats` was ordered by the columns `week.end` and `interval` and passed to summarise to calculate the sum, mean and median steps for each interval and if the day was a weekday/weekend.
+
+
+```r
+week_stats <- data_tidy %>%
+     group_by(.,week.end,interval) %>%
+     summarise(.,
+          steps.total  = sum(steps),
+          steps.mean   = mean(steps),
+          steps.median = median(steps)
+     )
+```
+
+A line with point plot of `steps.mean` versus `interval` was produced using the data.frame, `week_stats` using `ggplot` from the `ggplot2` package. The major x-tics are spaced apart by 200 (i.e. 2 hours), and the plot is faceted to compare the mean steps on a weekday versus the weekend.
+
+
+```r
+ggplot(week_stats,
+aes(x=interval, y=steps.mean, color = week.end)) + geom_line() + geom_point() +
+labs(title = "Mean Steps Vs. Interval", subtitle = "Weekday vs. Weekend", x = "Interval", y = "Mean Steps") +
+scale_x_continuous(limits = c(0,2350), breaks = seq(0,2400,200)) +
+facet_wrap(~week.end, ncol=1, nrow=2) +
+theme_classic() + theme(legend.position="none")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+From the plot it can be seen that durring the weekend the user is more consistantly active throughtout the day than durring weekdays. Durring the week there is a major spike at approximately `interval=835` with minor peaks at approximately `interval=1200,1530,1800'. Both plots seem to have comparible periods of inactivity at between intervals 0 and approximately 600.
